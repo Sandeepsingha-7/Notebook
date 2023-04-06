@@ -5,7 +5,9 @@ const router = express.Router()
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const JWT_secret = "lucid$dream"
+const fetchuser=require('../middleware/fetchuser')
 
+//Route:1 Create user
 router.post('/createuser', [
   body('name', 'Enter valid name!').isLength({ min: 3 }),
   body('email', 'Enter valid email id!').isEmail(),
@@ -44,7 +46,7 @@ router.post('/createuser', [
       res.status(500).json({ error: 'Internal Server Error' })
     }
 
-    //Authenticate a user
+    //Route:2 Authenticate a user
     router.post('/login', [
       body('email', 'Enter a valid email').isEmail(),
       body('password', 'Password cannot be blank').exists(),
@@ -74,8 +76,21 @@ router.post('/createuser', [
       catch (error) {
         console.error(error.message);
         res.status(500).send('Internal Server Error');
-      }})
-  
+      }
     })
+
+    //Route 3: Get loggedin user details 
+    router.post('/getuser', fetchuser, async (req, res) => {
+      try {
+        userId = req.user.id
+        const user = await User.findById(userId).select('-password')
+        res.send(user)
+      } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Internal Server Error');
+      }
+
+    })
+  })
 
 module.exports = router
